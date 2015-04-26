@@ -1,0 +1,95 @@
+package Driver
+
+
+
+//in port 4
+const (
+	PORT4 = 3
+	OBSTRUCTION = (0x300+23)
+	STOP = (0x300+22)
+	BUTTON_COMMAND1 = (0x300+21)
+	BUTTON_COMMAND2 = (0x300+20)
+	BUTTON_COMMAND3 = (0x300+19)
+	BUTTON_COMMAND4 = (0x300+18)	
+	BUTTON_UP1 = (0x300+17)
+	BUTTON_UP2 = (0x300+16)
+)
+
+
+//in port 1
+const (
+	PORT1 = 2
+	BUTTON_DOWN2 = (0x200+0)
+	BUTTON_UP3 = (0x200+1)
+	BUTTON_DOWN3 = (0x200+2)
+	BUTTON_DOWN4 = (0x200+3)
+	SENSOR_FLOOR1 = (0x200+4)
+	SENSOR_FLOOR2 = (0x200+5)
+	SENSOR_FLOOR3 = (0x200+6)
+	SENSOR_FLOOR4 = (0x200+7)
+)
+
+
+
+//out port 3
+const (
+	PORT3 = 3
+	MOTORDIR = (0X300+15)
+	LIGHT_STOP = (0X300+14)
+	LIGHT_COMMAND1 = (0X300+13)
+	LIGHT_COMMAND2 = (0X300+12)
+	LIGHT_COMMAND3 = (0X300+11)
+	LIGHT_COMMAND4 = (0X300+10)
+	LIGHT_UP1 = (0X300+9)
+	LIGHT_UP2 = (0X300+8)
+)
+
+
+
+//out port 2
+const (
+	PORT2 = 3
+	LIGHT_DOWN2 = (0X300+7)
+	LIGHT_UP3 = (0X300+6)
+	LIGHT_DOWN3 = (0X300+5)
+	LIGHT_DOWN4 = (0X300+4)
+	LIGHT_DOOR_OPEN = (0X300+3)
+	LIGHT_FLOOR_IND2 = (0X300+1)
+	LIGHT_FLOOR_IND1 = (0X300+0)
+)
+
+
+
+
+//out port 0
+const (
+	PORT0 = 1
+	MOTOR = (0X100+0)
+)
+
+
+
+//non-existing ports
+const (
+	BUTTON_DOWN1 = -1
+	BUTTON_UP4 = -1
+	LIGHT_DOWN1 = -1
+	LIGHT_UP4 = -1
+)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
