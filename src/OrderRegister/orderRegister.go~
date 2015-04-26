@@ -4,7 +4,6 @@ import (
 	."./../Driver"
 	."./../Udp"
 	"encoding/json"
-	//."fmt"
 )
 
 
@@ -42,9 +41,8 @@ var Defect bool
 var DoorOpen = false
 var OpenDoor = make(chan int)
 var GotMessage = make(chan string)
-var Alive = make(chan string)
 var NotOnNet = make(chan string)
-//var orderHandled = make(chan int)
+
 
 
 type Order struct {
@@ -81,10 +79,10 @@ func UpdateMyOrders(receivedOrder Order) {
 		} else if receivedOrder.Direction == 0 {
 			Down[receivedOrder.Floor] = false
 		} else if receivedOrder.Direction == -1 {
-			if MyDirection == 1 || receivedOrder.Floor == 0 {
+			if (MyDirection == 1 || receivedOrder.Floor == 0) {
 				Up[receivedOrder.Floor] = false
 			} 
-			if MyDirection == 0 || receivedOrder.Floor == N_FLOORS -1  {
+			if (MyDirection == 0 || receivedOrder.Floor == N_FLOORS -1)  {
 				Down[receivedOrder.Floor] = false
 			}
 		}
@@ -118,37 +116,12 @@ func UpdateMyOrders(receivedOrder Order) {
 
 
 
-func UpdateGlobalOrders(order Order){
-
-	if order.NewOrder {
-		if order.Direction == 1 {
-			GlobalUp[order.Floor] = true
-		} else if order.Direction == 0 {
-			GlobalDown[order.Floor] = true
-		}
-	} else if order.OrderHandled {
-		if order.Direction == 1 {
-			GlobalUp[order.Floor] = false
-		} else if order.Direction == 0 {
-			GlobalDown[order.Floor] = false
-		}
-	} else {
-		println("Error in UpdateGlobalOrders")
-	}
-}
-
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
 func SetButtonLight(order Order, IP string) {
 	
-	if order.NewOrder && order.Direction == 0 {
+	if (order.NewOrder && order.Direction == 0) {
 		Elev_set_button_lamp(BUTTON_CALL_DOWN, order.Floor, 1)
 		
-	} else if order.NewOrder && order.Direction == 1 {
+	} else if (order.NewOrder && order.Direction == 1) {
 		Elev_set_button_lamp(BUTTON_CALL_UP, order.Floor, 1)
 		
 	} else if order.OrderHandled {
@@ -157,10 +130,10 @@ func SetButtonLight(order Order, IP string) {
 			Elev_set_button_lamp(BUTTON_COMMAND, order.Floor, 0)
 		}
 		
-		if (order.Direction == 1 && order.Floor != N_FLOORS-1) || (order.Floor == 0) {
+		if ((order.Direction == 1 && order.Floor != N_FLOORS-1) || (order.Floor == 0)) {
 			Elev_set_button_lamp(BUTTON_CALL_UP, order.Floor, 0)
 			
-		} else if (order.Direction == 0 && order.Floor != 0) || (order.Floor == N_FLOORS-1){
+		} else if ((order.Direction == 0 && order.Floor != 0) || (order.Floor == N_FLOORS-1)) {
 			Elev_set_button_lamp(BUTTON_CALL_DOWN, order.Floor, 0)
 			
 		} else if order.Direction == -1 {
@@ -186,13 +159,13 @@ func GetOrder(direction int, floor int) int {
 	if Inside[floor] {
 		return -1
 	}
-	if Up[floor] && Down[floor] {
+	if (Up[floor] && Down[floor]) {
 		return direction
 	}
-	if Up[floor] && (direction == 1 || direction == -1 || floor == 0 || !CheckOrdersUnderFloor(floor)) {
+	if (Up[floor] && (direction == 1 || direction == -1 || floor == 0 || !CheckOrdersUnderFloor(floor))) {
 		return 1
 	}
-	if Down[floor] && (direction == 0 || direction == -1 || floor == N_FLOORS-1 || !CheckOrdersAboveFloor(floor)) {
+	if (Down[floor] && (direction == 0 || direction == -1 || floor == N_FLOORS-1 || !CheckOrdersAboveFloor(floor))) {
 		return 0
 	}
 	
@@ -278,18 +251,18 @@ func SetDirectionToOrder(orderDir int) {
 		MyDirection = -1
 		
 	} else if GetOrder(orderDir, LastFloor) == orderDir {
-		if orderDir == 0 && !CheckOrdersAboveFloor(LastFloor) {
+		if (orderDir == 0 && !CheckOrdersAboveFloor(LastFloor)) {
 			MyDirection = 0
 			OpenDoor <- 0
 			
-		} else if orderDir == 1 && !CheckOrdersUnderFloor(LastFloor) {
+		} else if (orderDir == 1 && !CheckOrdersUnderFloor(LastFloor)) {
 			MyDirection = 1
 			OpenDoor <- 1
 		}
 	} else {
-		if (MyDirection == 0) && !(CheckOrdersUnderFloor(LastFloor)) {
+		if ((MyDirection == 0) && !(CheckOrdersUnderFloor(LastFloor))) {
 			MyDirection = 1
-		} else if (MyDirection == 1) && !(CheckOrdersAboveFloor(LastFloor)) {
+		} else if ((MyDirection == 1) && !(CheckOrdersAboveFloor(LastFloor))) {
 			MyDirection = 0
 		} else if MyDirection == -1 {
 			if CheckOrdersAboveFloor(LastFloor) {

@@ -6,7 +6,6 @@ import (
 	."./../Cost"
 	."./../OrderRegister"
 	."time"
-	//."fmt"
 	
 )
 
@@ -50,7 +49,7 @@ func DoorControl() {
 
 
 
-//Sets timer for each elevator to know that their on net. Deletes elevator from directory if no message received in 3 seconds
+//Sets timer for each elevator to know that their on net. Deletes elevator from directory if no message received in 3 seconds.
 func MessageTimer(address string) {
 	
 	timer := NewTimer(3*Hour)
@@ -59,7 +58,7 @@ func MessageTimer(address string) {
 		
 		case IP := <- GotMessage:
 			if IP == address {
-				timer.Reset(3*Second)
+				timer.Reset(6*Second)
 			}
 		
 		case <- timer.C:
@@ -92,51 +91,10 @@ func MessageTimer(address string) {
 /////////////////////////////////////////////////////////////////////////////////////////////
 
 
-/*
-func OrderTimer(order int) {
-
-	timer := NewTimer(10*Second)
-	
-	if order.Direction == 1 {
-		floor = order.Floor
-	} else if order.Direction == 0 {
-		floor = N_FLOORS-2+order.Floor
-	}
-	
-	for {
-		select {
-		
-		case handledFloor := <- orderHandled:
-			if handledFloor == floor {
-				return
-			}
-		}
-		
-		case <- timer.C:
-			if order.Direction == 1 {
-				Up[order.Floor] = false
-			} else if order.Direction == 0 {
-				Down[order.Floor] = false
-			}
-			newOrder := Order{floor, direction, floor, direction, false, true, DoorOpen, Up, Down, Inside}
-			go SendOrder(newOrder)
-			timer.Reset(10*Second)
-			return
-			
-	}
-
-
-}
-*/
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////
-
-
 
 //Will register if any elevator do not take its orders and set elevator to defect.
-//Sends orders to other elevators if timer runs out. Deletes all outside orders and sets one order true to check if its running again
-func AliveTimer(address string) {
+//Sends orders to other elevators if timer runs out. Deletes all outside orders and sets one order true to check if its running again.
+func AliveTimer(IP string) {
 
 	timer := NewTimer(3*Hour)
 	oldUp := [N_FLOORS]bool{}
@@ -145,40 +103,39 @@ func AliveTimer(address string) {
 	
 	for {	
 		select {
-		case IP := <- Alive: 
+		default: 
 
-			if IP == address {
-				temp := Elevators[IP]
+			temp := Elevators[IP]
+			
+			if ((Elevators[IP].Direction == -1) || (Elevators[IP].DoorOpen)) {
+				timer.Reset(10*Second)
 				
-				if Elevators[IP].Direction == -1 || Elevators[IP].DoorOpen {
-					timer.Reset(10*Second)
-					
-				} else {
-					for i:=0; i<N_FLOORS; i++ {
-						if (oldUp[i] && !(Elevators[IP].Up)[i]) || (oldDown[i] && !(Elevators[IP].Down)[i]) || (oldInside[i] && !(Elevators[IP].Inside)[i]) {
-							timer.Reset(10*Second)
-							temp.Defect = false
-						}
-						oldUp[i] = temp.Up[i]
-						oldDown[i] = temp.Down[i]
-						oldInside[i] = temp.Inside[i]
+			} else {
+				for i:=0; i<N_FLOORS; i++ {
+					if ((oldUp[i] && !(Elevators[IP].Up)[i]) || (oldDown[i] && !(Elevators[IP].Down)[i]) || (oldInside[i] && !(Elevators[IP].Inside)[i])) {
+						timer.Reset(10*Second)
+						temp.Defect = false
 					}
-					Elevators[IP] = temp
+					oldUp[i] = temp.Up[i]
+					oldDown[i] = temp.Down[i]
+					oldInside[i] = temp.Inside[i]
 				}
+				Elevators[IP] = temp
 			}
+		
 		case <- timer.C:
 			
-			println("Elevator nr ", address, " is defect")
-			temp := Elevators[address]
+			println("Elevator nr ", IP, " is defect")
+			temp := Elevators[IP]
 			temp.Defect = true
-			Elevators[address] = temp
+			Elevators[IP] = temp
 			
 			for i:=0; i<N_FLOORS; i++ {
-				if (Elevators[address].Up)[i] {
+				if (Elevators[IP].Up)[i] {
 					order := Order{0, -1, i, 1, false, true, false, Up, Down, Inside}
 					go SendOrder(order)
 				}
-				if (Elevators[address].Down)[i] {
+				if (Elevators[IP].Down)[i] {
 					order := Order{0, -1, i, 0, false, true, false, Up, Down, Inside}
 					go SendOrder(order)
 				}
@@ -188,9 +145,9 @@ func AliveTimer(address string) {
 				temp.Down[i] = false
 			}
 			temp.Up[0] = true
-			Elevators[address] = temp
-		
-		case IP := <- NotOnNet:
+			Elevators[IP] = temp
+			
+		case address := <- NotOnNet:
 			if IP == address {
 				timer.Stop()
 				return
@@ -215,38 +172,44 @@ func SelfAliveTimer() {
 	
 	for {
 		select {
-		case IP := <- Alive:
+		default:
 
-			if IP == MyAddress {
+			if ((MyDirection == -1) || (DoorOpen)) {
+				timer.Reset(10*Second)
 				
-				if MyDirection == -1 || DoorOpen {
-					timer.Reset(10*Second)
-					
-				} else {
-					for i:=0; i<N_FLOORS; i++ {
-						if (oldUp[i] && !Up[i]) || (oldDown[i] && !Down[i]) || (oldInside[i] && !Inside[i]) {
-							timer.Reset(10*Second)
-							Defect = false
-						}
-						oldUp[i] = Up[i]
-						oldDown[i] = Down[i]
-						oldInside[i] = Inside[i]
+			} else {
+				for i:=0; i<N_FLOORS; i++ {
+					if ((oldUp[i] && !Up[i]) || (oldDown[i] && !Down[i]) || (oldInside[i] && !Inside[i])) {
+						timer.Reset(10*Second)
+						Defect = false
 					}
+					oldUp[i] = Up[i]
+					oldDown[i] = Down[i]
+					oldInside[i] = Inside[i]
 				}
 			}
+		
 		case <- timer.C:
 		
 			Defect = true
 			println("IM DEFECT")
 			
 			for i:=0; i<N_FLOORS; i++ {
+				if Up[i] {
+					order := Order{0, -1, i, 1, false, true, false, Up, Down, Inside}
+					go SendOrder(order)
+				}
+				if Down[i] {
+					order := Order{0, -1, i, 0, false, true, false, Up, Down, Inside}
+					go SendOrder(order)
+				}
 				oldUp[i] = false
 				oldDown[i] = false
 				Up[i] = false
 				Down[i] = false
 			}
 			Up[0] = true
-			
+			return
 		}
 	}
 }
